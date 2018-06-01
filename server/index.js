@@ -4,13 +4,21 @@ const http = require("http");
 const WebSocket = require("ws");
 const uuidv4 = require("uuid/v4");
 const redis = require("redis");
+const {promisify} = require('util');
+
 const redisPublisher = redis.createClient();
 const redisSubscriber = redis.createClient();
+
+const llen = promisify(redisPublisher.llen).bind(redisPublisher);
+const rpop = promisify(redisPublisher.rpop).bind(redisPublisher);
+const lpush = promisify(redisPublisher.lpush).bind(redisPublisher);
+const lrange = promisify(redisPublisher.lrange).bind(redisPublisher);
 
 const app = express();
 
 const PUBLIC_FOLDER = path.join(__dirname, "../public");
 const PORT = process.env.PORT || 5000;
+const DRAWING_POINTS_TO_KEEP = 5000;
 
 const socketsPerChannels /* Map<string, Set<WebSocket>> */ = new Map();
 const channelsPerSocket /* WeakMap<WebSocket, Set<string> */ = new WeakMap();
@@ -37,6 +45,8 @@ function subscribe(socket, channel) {
     if (socketSubscribed.size === 1) {
         redisSubscriber.subscribe(channel);
     }
+
+    reloadCanvas(socket, channel);
 }
 
 /*
@@ -68,8 +78,22 @@ function unsubscribeAll(socket) {
     });
 }
 
-function broadcast(channel, data) {
+async function broadcast(channel, data) {
     redisPublisher.publish(channel, data);
+
+    while (await llen(channel) >= DRAWING_POINTS_TO_KEEP) {
+        await rpop(channel);
+    }
+
+    await lpush(channel, data);
+}
+
+async function reloadCanvas(ws, channel) {
+    let data = await lrange(channel, 0, DRAWING_POINTS_TO_KEEP);
+
+    data.forEach(d => {
+        ws.send(d);
+    });
 }
 
 redisSubscriber.on("message", (channel, message) => {
