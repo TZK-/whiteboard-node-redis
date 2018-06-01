@@ -4,8 +4,8 @@ const http = require("http");
 const WebSocket = require("ws");
 const uuidv4 = require("uuid/v4");
 const redis = require("redis");
-const publisher = redis.createClient();
-const client = redis.createClient();
+const redisPublisher = redis.createClient();
+const redisSubscriber = redis.createClient();
 
 const app = express();
 
@@ -35,7 +35,7 @@ function subscribe(socket, channel) {
     channelsPerSocket.set(socket, channelSubscribed);
 
     if (socketSubscribed.size === 1) {
-        client.subscribe(channel);
+        redisSubscriber.subscribe(channel);
     }
 }
 
@@ -53,7 +53,7 @@ function unsubscribe(socket, channel) {
     channelsPerSocket.set(socket, channelSubscribed);
 
     if (socketSubscribed.size === 0) {
-        client.unsubscribe(channel);
+        redisSubscriber.unsubscribe(channel);
     }
 }
 
@@ -69,14 +69,14 @@ function unsubscribeAll(socket) {
 }
 
 function broadcast(channel, data) {
-    publisher.publish(channel, data);
+    redisPublisher.publish(channel, data);
 }
 
-client.on("message", (channel, message) => {
+redisSubscriber.on("message", (channel, message) => {
     const socketSubscribed = socketsPerChannels.get(channel) || new Set();
 
-    socketSubscribed.forEach(socket => {
-        socket.send(message);
+    socketSubscribed.forEach(client => {
+        client.send(message);
     });
 });
 
