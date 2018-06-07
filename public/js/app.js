@@ -96,8 +96,9 @@ const onMouseMove = event => {
     });
 };
 
-const onMouseDown = () => {
+const onMouseDown = event => {
     isPressingCanvas = true;
+    onMouseMove(event);
 };
 
 const onMouseUp = () => {
