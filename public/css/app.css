@@ -43,23 +43,3 @@ body, html {
 #color-picker .color:hover {
     transform: scale(1.4);
 }
-
-#tools {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    margin-top: 20px;
-}
-
-#tools .tool {
-    border-radius: 24px;
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-    transform: scale(1);
-    transition: transform ease 300ms;
-}
-
-#tools .tool:hover {
-    transform: scale(1.4);
-}
