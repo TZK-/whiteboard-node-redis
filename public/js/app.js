@@ -19,6 +19,8 @@ container.appendChild(canvas);
 
 const ctx = canvas.getContext("2d");
 
+const wordToDiscover = document.getElementById("word-to-discover");
+
 // Draw in the canvas for draw message received
 const socket = new WebSocket(location.origin.replace(/^http/, 'ws'), "protocolOne");
 
@@ -32,14 +34,22 @@ socket.addEventListener("message", event => {
         return;
     }
 
-    if (message.type == "draw") {
-        drawInCanvas(
-            ctx,
-            message.payload.x,
-            message.payload.y,
-            message.payload.color,
-            message.payload.size
-        );
+    switch (message.type) {
+        case 'wordToDiscover':
+            wordToDiscover.innerHTML = message.word;
+            break;
+
+        case "draw":
+            drawInCanvas(
+                ctx,
+                message.payload.x,
+                message.payload.y,
+                message.payload.color,
+                message.payload.size
+            );
+            break;
+        default:
+            break;
     }
 });
 

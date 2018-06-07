@@ -13,14 +13,6 @@ app.get("/", (req, res) => {
     res.redirect('/' + uuidv4());
 });
 
-app.get("/login", (req, res, next) => {
-    res.sendFile(path.join(config.express.public_path, "login.html"), {}, err => {
-        if (err) {
-            next(err);
-        }
-    });
-});
-
 app.get("/:channel", (req, res, next) => {
     res.sendFile(path.join(config.express.public_path, "index.html"), {}, err => {
         if (err) {

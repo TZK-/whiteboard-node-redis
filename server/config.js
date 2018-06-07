@@ -10,7 +10,8 @@ const config = {
         port: process.env.PORT || 5000
     },
     whiteboard: {
-        points_to_keep: 3000
+        points_to_keep: 3000,
+        words: ["dog", "cat", "car", "computer", "table", "chair"]
     }
 };
 

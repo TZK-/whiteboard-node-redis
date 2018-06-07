@@ -35,9 +35,22 @@ function subscribe(socket, channel) {
 
     if (socketSubscribed.size === 1) {
         redisSubscriber.subscribe(channel);
+
+        sendWordToGuess(socket, channel);
     }
 
     reloadCanvas(socket, channel);
+}
+
+function sendWordToGuess(socket, channel) {
+    const word = config.whiteboard.words[Math.floor(Math.random() * config.whiteboard.words.length)];
+    const payload = {
+        type: "wordToDiscover",
+        channel: channel,
+        word: word
+    };
+    redisPublisher.set(channel, word);
+    socket.send(JSON.stringify(payload));
 }
 
 function unsubscribe(socket, channel) {
